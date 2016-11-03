@@ -1,0 +1,96 @@
+import java.util.ArrayList;
+
+
+public class RobinKarp {
+
+	public  int prime = 17;
+	private  String pattern;
+	private  String text;
+	private  int numOfMatches=0;
+	private  ArrayList<Integer> index=new ArrayList<Integer>();
+
+	public RobinKarp(String pat, String txt){
+		pattern = pat;
+		text = txt;	
+	}
+
+	public  boolean run(){
+		if ((pattern==null)||(pattern.length()==0)){
+			return true;
+		}
+		else if((text==null)||(text.length()==0)||(text.length()<pattern.length())){
+			return false;
+		}
+		else{
+			int patternLength = pattern.length();
+			long hashNum = hash(pattern, prime);
+
+			String currentString = text.substring(0, patternLength);			
+			long hashNum1 = hash(currentString, prime);
+
+			if ((hashNum==hashNum1)&&(pattern.equals(currentString))){
+				numOfMatches++;
+				index.add(0);
+			}
+			String oldString = currentString;
+			for(int i=1;i<text.length()-pattern.length()+1;i++){
+				currentString = text.substring(i,i+patternLength);
+				long newHashNum = nextHash(hashNum1, oldString.charAt(0),currentString.charAt(patternLength-1),prime,patternLength);
+				if((newHashNum==hashNum)&&(currentString.equals(pattern)))
+				{
+					numOfMatches++;
+					index.add(i);
+				}
+				oldString = currentString;
+				hashNum1 = newHashNum;
+
+			}
+			if (numOfMatches>0){
+				return true;
+			}else
+				return false;
+		}
+
+
+	}
+
+	public  void showResult(){
+		run();
+		if (numOfMatches>0){
+			System.out.println("Matches found, there are " + numOfMatches + " matches found");
+			System.out.println("Index are : ");
+			for(int i:index){
+				System.out.print(i + " ");
+			}
+		}
+		else{
+			System.out.println("No matches found");
+		}
+	}
+
+	private  long hash(String text, int prime)
+	{
+		int textLength = text.length();
+		long hashNum = 0;
+		for(int i=0;i<textLength;i++){
+			hashNum = (long) (hashNum+text.charAt(i)*Math.pow(prime, i));
+		}
+		return hashNum;
+	}
+
+	private  long nextHash(long oldHashValue, char oldFirstChar, char newLastChar, int prime, int patternLength){
+		long newHashValue;
+		newHashValue = (long) ((oldHashValue - oldFirstChar)/prime + newLastChar*Math.pow(prime, patternLength-1));
+		return newHashValue;	
+	}
+
+
+	public static void main(String[] args){
+		String pattern = "abcd";
+		String text = "aabacdabcdaaabcdaaabcd";
+		RobinKarp rk = new RobinKarp(pattern,text);
+		rk.showResult();
+		return;
+	}
+
+}
